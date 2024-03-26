@@ -65,8 +65,8 @@ def create_model(
     """
     # model metrics
     opt = tf.keras.optimizers.Adam()
-    loss = tf.keras.losses.BinaryCrossentropy()
-    accuracy = tf.keras.metrics.BinaryAccuracy()
+    loss = "binary_crossentropy"
+    accuracy = "accuracy"
 
     # input layers
     input_ids = tf.keras.Input(shape=(max_len,), dtype="int32")
@@ -77,7 +77,7 @@ def create_model(
     output = output[1]
 
     # dropout layer for regulization (might overfitting because random over sampler)
-    output = tf.keras.layers.Dropout(0.5)(output)
+    output = tf.keras.layers.Dropout(0.15)(output)
 
     # dense layer with sigmoid activation (binary problem)
     output = tf.keras.layers.Dense(1, activation="sigmoid")(output)
