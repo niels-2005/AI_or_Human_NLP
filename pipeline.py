@@ -1,13 +1,13 @@
-import pandas as pd
-from sklearn.model_selection import train_test_split
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 from imblearn.over_sampling import RandomOverSampler
-from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.svm import SVC
 from sklearn.metrics import classification_report
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.pipeline import Pipeline
+from sklearn.svm import SVC
 
 
 def pipe(
@@ -149,11 +149,13 @@ def balance_train_set(
     return X_train, y_train
 
 
-def fit_and_predict(X_train: np.ndarray, X_test: np.ndarray, y_train: np.ndarray, y_test: np.ndarray) -> None:
+def fit_and_predict(
+    X_train: np.ndarray, X_test: np.ndarray, y_train: np.ndarray, y_test: np.ndarray
+) -> None:
     """
     Fits a text processing and classification pipeline on training data and makes predictions on test data. The pipeline
     includes CountVectorizer for tokenizing text data and converting it into a matrix of token counts, TfidfTransformer
-    for computing term frequency-inverse document frequency to reflect the importance of words to a document, and 
+    for computing term frequency-inverse document frequency to reflect the importance of words to a document, and
     MultinomialNB for Naive Bayes classification. Finally, prints a classification report comparing the predictions to
     the true labels in the test set.
 
@@ -164,16 +166,19 @@ def fit_and_predict(X_train: np.ndarray, X_test: np.ndarray, y_train: np.ndarray
         y_test (np.ndarray): Test labels, expected to be a numpy array of target values.
     """
     # build pipeline
-    pipeline = Pipeline([
-    ('count_vectorizer', CountVectorizer()),  
-    ('tfidf_transformer', TfidfTransformer()),
-    ('naive_bayes', MultinomialNB())])
+    pipeline = Pipeline(
+        [
+            ("count_vectorizer", CountVectorizer()),
+            ("tfidf_transformer", TfidfTransformer()),
+            ("naive_bayes", MultinomialNB()),
+        ]
+    )
 
     print("Fitting Pipeline... \n\n")
     pipeline.fit(X_train, y_train)
 
     print("predicting... \n\n")
     y_pred = pipeline.predict(X_test)
-    
+
     # print classification report
     print(classification_report(y_test, y_pred))
