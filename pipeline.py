@@ -3,39 +3,45 @@ from sklearn.model_selection import train_test_split
 import numpy as np
 import matplotlib.pyplot as plt
 from imblearn.over_sampling import RandomOverSampler
+from sklearn.pipeline import Pipeline
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.svm import SVC
+from sklearn.metrics import classification_report
 
 
-def prep_train_pipeline(
+def pipe(
     df: pd.DataFrame,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
-    Prepares the training pipeline by splitting the data into train and test sets, checking for balance,
-    balancing the train set if necessary, and reshaping the datasets.
+    Processes a DataFrame by splitting it into training and testing sets, ensuring the training set is balanced, and then
+    training and predicting with a text processing pipeline. This pipeline uses CountVectorizer, TfidfTransformer, and
+    MultinomialNB for classification.
 
     Args:
-        df (pd.DataFrame): The input DataFrame containing the features and target variable.
+        df (pd.DataFrame): Input DataFrame with 'text' and 'target' columns.
 
     Returns:
-        tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]: A tuple containing the reshaped training features (X_train),
-        testing features (X_test), training labels (y_train), and testing labels (y_test).
+        tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]: Training features (X_train), testing features (X_test),
+        training labels (y_train), and testing labels (y_test), ready for model training and evaluation.
     """
-    print("Creating Train, Test split...")
+    print("Creating Train, Test split...\n\n")
     X_train, X_test, y_train, y_test = get_train_test_split(df=df)
 
-    print("Done! check for balance ...")
+    print("Done! check for balance ... \n\n")
     plot_balance(y_train=y_train, y_test=y_test)
 
-    print("Looks unbalanced! Balancing Train Set...")
+    print("Looks unbalanced! Balancing Train Set... \n\n")
     X_train, y_train = balance_train_set(X_train=X_train, y_train=y_train)
 
     plot_balance(y_train=y_train, y_test=y_test)
-    print("Done!")
+    print("Balanced! \n\n")
 
     # reshape back into (-1,)
     X_train = X_train.reshape(-1)
     y_train = y_train.reshape(-1)
 
-    return X_train, X_test, y_train, y_test
+    fit_and_predict(X_train=X_train, X_test=X_test, y_train=y_train, y_test=y_test)
 
 
 def get_train_test_split(
@@ -141,3 +147,33 @@ def balance_train_set(
     X_train, y_train = ros.fit_resample(X_training, y_training)
 
     return X_train, y_train
+
+
+def fit_and_predict(X_train: np.ndarray, X_test: np.ndarray, y_train: np.ndarray, y_test: np.ndarray) -> None:
+    """
+    Fits a text processing and classification pipeline on training data and makes predictions on test data. The pipeline
+    includes CountVectorizer for tokenizing text data and converting it into a matrix of token counts, TfidfTransformer
+    for computing term frequency-inverse document frequency to reflect the importance of words to a document, and 
+    MultinomialNB for Naive Bayes classification. Finally, prints a classification report comparing the predictions to
+    the true labels in the test set.
+
+    Args:
+        X_train (np.ndarray): Training features, expected to be a numpy array of text data.
+        X_test (np.ndarray): Test features, expected to be a numpy array of text data.
+        y_train (np.ndarray): Training labels, expected to be a numpy array of target values.
+        y_test (np.ndarray): Test labels, expected to be a numpy array of target values.
+    """
+    # build pipeline
+    pipeline = Pipeline([
+    ('count_vectorizer', CountVectorizer()),  
+    ('tfidf_transformer', TfidfTransformer()),
+    ('naive_bayes', MultinomialNB())])
+
+    print("Fitting Pipeline... \n\n")
+    pipeline.fit(X_train, y_train)
+
+    print("predicting... \n\n")
+    y_pred = pipeline.predict(X_test)
+    
+    # print classification report
+    print(classification_report(y_test, y_pred))
